@@ -4,6 +4,7 @@ import com.example.transactionstarter.transaction.entity.TransactionType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import java.math.BigDecimal;
 
@@ -20,8 +21,8 @@ public class CreateTransactionRequest {
     private BigDecimal amount;
 
     @NotBlank
+    @Pattern(regexp = "^[A-Z]{3}$", message = "must be a 3-letter uppercase currency code")
     private String currency;
-
     @NotNull
     private TransactionType transactionType;
 
