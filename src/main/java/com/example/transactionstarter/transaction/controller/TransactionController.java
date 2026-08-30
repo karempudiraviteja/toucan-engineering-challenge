@@ -5,6 +5,9 @@ import com.example.transactionstarter.transaction.dto.UpdateTransactionStatusReq
 import com.example.transactionstarter.transaction.entity.Transaction;
 import com.example.transactionstarter.transaction.service.TransactionService;
 import jakarta.validation.Valid;
+
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,5 +55,15 @@ public class TransactionController {
                 transactionService.updateTransactionStatus(transactionId, request);
 
         return ResponseEntity.ok(transaction);
+    }
+    
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<List<Transaction>> getCustomerTransactions(
+            @PathVariable String customerId) {
+
+        List<Transaction> transactions =
+                transactionService.getCustomerTransactions(customerId);
+
+        return ResponseEntity.ok(transactions);
     }
 }

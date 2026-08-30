@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -189,5 +190,44 @@ class TransactionControllerTest {
                 .andExpect(jsonPath("$.error", is("Not Found")))
                 .andExpect(jsonPath("$.message",
                         is("Transaction not found: TXN999")));
+    }
+    
+    @Test
+    void shouldReturnCustomerTransactions() throws Exception {
+
+        Transaction transaction1 = new Transaction();
+
+        transaction1.setTransactionId("TXN006");
+        transaction1.setCustomerId("CUS006");
+        transaction1.setAmount(new java.math.BigDecimal("500.00"));
+        transaction1.setCurrency("INR");
+        transaction1.setTransactionType(TransactionType.PAYMENT);
+        transaction1.setStatus(TransactionStatus.PENDING);
+
+        Transaction transaction2 = new Transaction();
+
+        transaction2.setTransactionId("TXN007");
+        transaction2.setCustomerId("CUS006");
+        transaction2.setAmount(new java.math.BigDecimal("1000.00"));
+        transaction2.setCurrency("INR");
+        transaction2.setTransactionType(TransactionType.PAYMENT);
+        transaction2.setStatus(TransactionStatus.COMPLETED);
+
+        transactionRepository.save(transaction1);
+        transactionRepository.save(transaction2);
+
+        mockMvc.perform(get("/api/transactions/customer/CUS006"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].customerId", is("CUS006")))
+                .andExpect(jsonPath("$[1].customerId", is("CUS006")));
+    }
+    
+    @Test
+    void shouldReturnEmptyListWhenCustomerHasNoTransactions() throws Exception {
+
+        mockMvc.perform(get("/api/transactions/customer/CUS999"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 }

@@ -8,6 +8,9 @@ import com.example.transactionstarter.transaction.exception.DuplicateTransaction
 import com.example.transactionstarter.transaction.exception.InvalidTransactionStatusException;
 import com.example.transactionstarter.transaction.exception.TransactionNotFoundException;
 import com.example.transactionstarter.transaction.repository.TransactionRepository;
+
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -74,5 +77,9 @@ public class TransactionService {
         transaction.setStatus(newStatus);
 
         return transactionRepository.save(transaction);
+    }
+    
+    public List<Transaction> getCustomerTransactions(String customerId) {
+        return transactionRepository.findByCustomerId(customerId);
     }
 }
