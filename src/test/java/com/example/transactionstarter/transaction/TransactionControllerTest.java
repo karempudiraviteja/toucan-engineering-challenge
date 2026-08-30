@@ -1,6 +1,7 @@
 package com.example.transactionstarter.transaction;
 
 import com.example.transactionstarter.transaction.entity.Transaction;
+
 import com.example.transactionstarter.transaction.entity.TransactionStatus;
 import com.example.transactionstarter.transaction.entity.TransactionType;
 import com.example.transactionstarter.transaction.repository.TransactionRepository;
@@ -13,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -103,5 +105,13 @@ class TransactionControllerTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error", is("Conflict")))
                 .andExpect(jsonPath("$.message", is("Transaction already exists: TXN003")));
+    }
+    @Test
+    void shouldReturnNotFoundForNonExistingTransaction() throws Exception {
+
+        mockMvc.perform(get("/api/transactions/TXN999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error", is("Not Found")))
+                .andExpect(jsonPath("$.message", is("Transaction not found: TXN999")));
     }
 }
