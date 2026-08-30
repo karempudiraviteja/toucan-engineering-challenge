@@ -1,12 +1,14 @@
 package com.example.transactionstarter.transaction.controller;
 
 import com.example.transactionstarter.transaction.dto.CreateTransactionRequest;
+import com.example.transactionstarter.transaction.dto.UpdateTransactionStatusRequest;
 import com.example.transactionstarter.transaction.entity.Transaction;
 import com.example.transactionstarter.transaction.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +39,17 @@ public class TransactionController {
             @PathVariable String transactionId) {
 
         Transaction transaction = transactionService.getTransaction(transactionId);
+
+        return ResponseEntity.ok(transaction);
+    }
+    
+    @PatchMapping("/{transactionId}/status")
+    public ResponseEntity<Transaction> updateTransactionStatus(
+            @PathVariable String transactionId,
+            @Valid @RequestBody UpdateTransactionStatusRequest request) {
+
+        Transaction transaction =
+                transactionService.updateTransactionStatus(transactionId, request);
 
         return ResponseEntity.ok(transaction);
     }

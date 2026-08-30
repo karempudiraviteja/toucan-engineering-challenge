@@ -63,4 +63,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
     
+    @ExceptionHandler(InvalidTransactionStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidTransactionStatus(
+            InvalidTransactionStatusException exception) {
+
+        Map<String, Object> response = Map.of(
+                "timestamp", LocalDateTime.now(),
+                "status", HttpStatus.BAD_REQUEST.value(),
+                "error", HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                "message", exception.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+    
 }

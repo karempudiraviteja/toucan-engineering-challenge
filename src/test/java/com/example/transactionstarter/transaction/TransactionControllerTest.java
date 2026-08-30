@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -113,5 +114,80 @@ class TransactionControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error", is("Not Found")))
                 .andExpect(jsonPath("$.message", is("Transaction not found: TXN999")));
+    }
+    
+    @Test
+    void shouldUpdateTransactionStatusSuccessfully() throws Exception {
+
+        Transaction transaction = new Transaction();
+
+        transaction.setTransactionId("TXN004");
+        transaction.setCustomerId("CUS004");
+        transaction.setAmount(new java.math.BigDecimal("1000.00"));
+        transaction.setCurrency("INR");
+        transaction.setTransactionType(TransactionType.PAYMENT);
+        transaction.setStatus(TransactionStatus.PENDING);
+
+        transactionRepository.save(transaction);
+
+        String request = """
+                {
+                    "status": "COMPLETED"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/transactions/TXN004/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.transactionId", is("TXN004")))
+                .andExpect(jsonPath("$.status", is("COMPLETED")));
+    }
+    
+    @Test
+    void shouldRejectInvalidStatusTransition() throws Exception {
+
+        Transaction transaction = new Transaction();
+
+        transaction.setTransactionId("TXN005");
+        transaction.setCustomerId("CUS005");
+        transaction.setAmount(new java.math.BigDecimal("1000.00"));
+        transaction.setCurrency("INR");
+        transaction.setTransactionType(TransactionType.PAYMENT);
+        transaction.setStatus(TransactionStatus.COMPLETED);
+
+        transactionRepository.save(transaction);
+
+        String request = """
+                {
+                    "status": "FAILED"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/transactions/TXN005/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("Bad Request")))
+                .andExpect(jsonPath("$.message",
+                        is("Transaction status cannot be changed from COMPLETED")));
+    }
+    
+    @Test
+    void shouldReturnNotFoundWhenUpdatingNonExistingTransaction() throws Exception {
+
+        String request = """
+                {
+                    "status": "COMPLETED"
+                }
+                """;
+
+        mockMvc.perform(patch("/api/transactions/TXN999/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error", is("Not Found")))
+                .andExpect(jsonPath("$.message",
+                        is("Transaction not found: TXN999")));
     }
 }

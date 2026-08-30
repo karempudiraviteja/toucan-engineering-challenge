@@ -1,9 +1,11 @@
 package com.example.transactionstarter.transaction.service;
 
 import com.example.transactionstarter.transaction.dto.CreateTransactionRequest;
+import com.example.transactionstarter.transaction.dto.UpdateTransactionStatusRequest;
 import com.example.transactionstarter.transaction.entity.Transaction;
 import com.example.transactionstarter.transaction.entity.TransactionStatus;
 import com.example.transactionstarter.transaction.exception.DuplicateTransactionException;
+import com.example.transactionstarter.transaction.exception.InvalidTransactionStatusException;
 import com.example.transactionstarter.transaction.exception.TransactionNotFoundException;
 import com.example.transactionstarter.transaction.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
@@ -46,5 +48,31 @@ public class TransactionService {
                                 "Transaction not found: " + transactionId
                         )
                 );
+    }
+    
+    public Transaction updateTransactionStatus(
+            String transactionId,
+            UpdateTransactionStatusRequest request) {
+
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() ->
+                        new TransactionNotFoundException(
+                                "Transaction not found: " + transactionId
+                        )
+                );
+
+        TransactionStatus currentStatus = transaction.getStatus();
+        TransactionStatus newStatus = request.getStatus();
+
+        if (currentStatus != TransactionStatus.PENDING) {
+
+            throw new InvalidTransactionStatusException(
+                    "Transaction status cannot be changed from "
+                            + currentStatus
+            );
+        }
+        transaction.setStatus(newStatus);
+
+        return transactionRepository.save(transaction);
     }
 }
